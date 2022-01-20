@@ -17,7 +17,7 @@ class Nitron {
     customElements.define(`${elementName}`, class extends HTMLElement {
         connectedCallback() {
             if(ComponentOptions.return){
-                this.outerHTML = optionsreturn;
+                this.outerHTML = ComponentOptions.return;
             }
          }
      });
