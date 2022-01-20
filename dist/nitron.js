@@ -13,6 +13,15 @@ const nitronDOM = new NitronDOM();
 
 class Nitron {
   constructor() {};
+  component(elementName, ComponentOptions){
+    customElements.define(`${elementName}`, class extends HTMLElement {
+        connectedCallback() {
+            if(ComponentOptions.return){
+                this.outerHTML = optionsreturn;
+            }
+         }
+     });
+  };
   renderXML(url,get) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
