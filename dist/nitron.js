@@ -1,5 +1,5 @@
 /*!
- * Nitron.js v0.0.1
+ * Nitron.js v0.0.4
  * (c) 2022 WADE Open Source Software and Nitron Team.
  * Released under the MIT License.
  */
@@ -8,21 +8,7 @@ class NitronDOM {
   render(code, queryinsertion) {
     queryinsertion.innerHTML = code;
   };
-}
-const nitronDOM = new NitronDOM();
-
-class Nitron {
-  constructor() {};
-  component(elementName, ComponentOptions){
-    customElements.define(`${elementName}`, class extends HTMLElement {
-        connectedCallback() {
-            if(ComponentOptions.return){
-                this.outerHTML = ComponentOptions.return;
-            }
-         }
-     });
-  };
-  renderXML(url,get) {
+    renderXML(url,get) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
@@ -39,6 +25,20 @@ class Nitron {
     };
     xmlhttp.open("GET", url, true);
     xmlhttp.send();
+  };
+}
+const nitronDOM = new NitronDOM();
+
+class Nitron {
+  constructor() {};
+  component(elementName, ComponentOptions){
+    customElements.define(`${elementName}`, class extends HTMLElement {
+        connectedCallback() {
+            if(ComponentOptions.return){
+                this.outerHTML = ComponentOptions.return;
+            }
+         }
+     });
   };
   ClassName(classname, classnamelist){
     document.querySelector(classname).classList = classnamelist
