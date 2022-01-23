@@ -4,28 +4,28 @@
  * Released under the MIT License.
  */
 class NitronDOM {
-  constructor() {};
-  render(code, queryinsertion) {
-    queryinsertion.innerHTML = code;
-  };
-    renderXML(url,get) {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-           if (xmlhttp.status == 200) {
-                document.querySelector(get).innerHTML = xmlhttp.responseText;
-           }
-           else if (xmlhttp.status == 400) {
-              alert('There was an error 400');
-           }
-           else {
-               alert('something else other than 200 was returned');
-           }
-        }
+    constructor() {};
+    render(code, queryinsertion) {
+      queryinsertion.innerHTML = code;
     };
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
-  };
+      renderXML(url,get) {
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+          if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+             if (xmlhttp.status == 200) {
+                  document.querySelector(get).innerHTML = xmlhttp.responseText;
+             }
+             else if (xmlhttp.status == 400) {
+                alert('There was an error 400');
+             }
+             else {
+                 alert('something else other than 200 was returned');
+             }
+          }
+      };
+      xmlhttp.open("GET", url, true);
+      xmlhttp.send();
+    };
 }
 const nitronDOM = new NitronDOM();
 
@@ -33,14 +33,24 @@ class Nitron {
   constructor() {};
   component(elementName, ComponentOptions){
     customElements.define(`${elementName}`, class extends HTMLElement {
-        connectedCallback() {
-            if(ComponentOptions.return){
-                this.outerHTML = ComponentOptions.return;
-            }
-         }
-     });
+      connectedCallback() {
+        if (ComponentOptions.return) {
+          if (this.getAttributeNames()) {
+            const AttrNames = this.getAttributeNames();
+            var optionsreturn = ComponentOptions.return;
+            AttrNames.forEach(attr => {
+              let val = this.getAttribute(attr);
+              optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
+            });
+            this.outerHTML = optionsreturn;
+          } else {
+            this.outerHTML = ComponentOptions.return
+          }
+        }
+      }
+    });
   };
-  ClassName(classname, classnamelist){
+  ClassName(classname, classnamelist){ 
     document.querySelector(classname).classList = classnamelist
   };
   randomClassName() {
@@ -116,28 +126,17 @@ class Nitron {
     }
   };
 };
+
+
 function styles(style) {
   const name = nitron.randomClassName()
   nitron.style(`.${name}`,style)
   return name
 };
-class mediaclass {
-  constructor() {};
-  styles(style) {
-    const name = nitron.randomClassName()
-    if (matchMedia(`screen and (min-width: ${style.size})`).matches) {
-      nitron.style(`.${name}`,style.style)
-    } else {
-      nitron.style(`.${name}`,style.media)
-    }
-    return name;
-  };
-}
-const media = new mediaclass();
-const nitron = new Nitron();
 
-var placeholders = function (template, data) {
-  'use strict';
+const nitron = new Nitron();
+  
+var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
   if (!data) return template;
