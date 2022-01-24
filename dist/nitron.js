@@ -127,23 +127,44 @@ class Nitron {
   };
 };
 
-
-// const name = nitron.randomClassName()
-//     nitron.style(`.${name}`,style)
-//     this.name = name
-//     return name
-
 function styles(style="") {
   const name = nitron.randomClassName()
   nitron.style(`.${name}`,style)
   if(style.style){
     nitron.style(`.${name}`,style.style)
-  }
+  };
   if(style.type){
     Object.keys(style.type).forEach(x =>
       nitron.style(`.${name}:${x}`,style.type[x])
     )
-  }
+  };
+  if(style.media){
+    var mediaquery = window.matchMedia(`screen and (${style.media.size})`);
+
+    if (mediaquery.matches) {
+      nitron.style(`.${name}`,style.media.style);
+      if(style.media.type){
+        Object.keys(style.media.type).forEach(x =>
+          nitron.style(`.${name}:${x}`,style.media.type[x])
+        )
+      };
+    }
+
+    mediaquery.addListener((a) => {
+      if(a.matches === true){
+         nitron.style(`.${name}`,style.media.style)
+        if(style.media.type){
+          Object.keys(style.media.type).forEach(x =>
+            nitron.style(`.${name}:${x}`,style.media.type[x])
+          )
+        }
+      }else{
+        if(style.style){
+          nitron.style(`.${name}`,style.style)
+        };
+      }
+    });
+  };
   return name
 };
 
