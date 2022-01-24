@@ -161,6 +161,11 @@ function styles(style="") {
       }else{
         if(style.style){
           nitron.style(`.${name}`,style.style)
+          if(style.type){
+            Object.keys(style.type).forEach(x =>
+              nitron.style(`.${name}:${x}`,style.type[x])
+            )
+          };
         };
       }
     });
