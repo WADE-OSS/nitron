@@ -4,66 +4,83 @@
  * Released under the MIT License.
  */
 class NitronDOM {
-    constructor() {};
-    render(HTML, queryinsertion) {
-      if(HTML.match(/<[A-Z][a-z]*\/>/g)){
-        HTML.match(/<[A-Z][a-z]*\/>/g).forEach((doc)=>{
-          HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.slice(1,doc.length-2)}>`)
+  constructor() {};
+
+  // Returns an element written in JS as HTML
+  // Todo List
+  // 1. Allow div to be used as <></> : Check - Available from version 0.0.5
+  // 2. < If the next first letter is uppercase, add dom- between them to call the custom element component of 'dom-name'. : Check - Available from version 0.0.5
+  // 3. Allows shortening to <custom-element/> when an element does not have an attribute : Check - Available from version 0.0.5
+
+  render(HTML, queryinsertion) {
+    if(HTML.match(/<[A-Z][a-z]*\/>/g)){
+      HTML.match(/<[A-Z][a-z]*\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.slice(1,doc.length-2)}>`)
+      });
+    }
+    if(HTML.match(/<[A-Z]/g)){
+      HTML.match(/<[A-Z]/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<dom-${doc[1]}`)
+      });
+      if(HTML.match(/\<\/[A-Z]/g)){
+        HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`</dom-${doc[2]}`)
         });
-      }
-      if(HTML.match(/<[A-Z]/g)){
-        HTML.match(/<[A-Z]/g).forEach((doc)=>{
-          HTML = HTML.replace(doc,`<dom-${doc[1]}`)
-        });
-        if(HTML.match(/\<\/[A-Z]/g)){
-          HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
-            HTML = HTML.replace(doc,`</dom-${doc[2]}`)
-          });
-        };
       };
-      if(HTML.match(/<>/g)){
-        HTML.match(/<>/g).forEach((doc)=>{
-          HTML = HTML.replace(doc,`<div>`)
-        });
-        if(HTML.match(/<\/>/g)){
-          HTML.match(/<\/>/g).forEach((doc)=>{
-            HTML = HTML.replace(doc,`</div>`)
-          });
-        };
-      };
-      
-      queryinsertion.innerHTML = HTML;
     };
-      renderXML(url,get) {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-          if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-             if (xmlhttp.status == 200) {
-                  document.querySelector(get).innerHTML = xmlhttp.responseText;
-             }
-             else if (xmlhttp.status == 400) {
-                alert('There was an error 400');
-             }
-             else {
-                 alert('something else other than 200 was returned');
-             }
-          }
+    if(HTML.match(/<>/g)){
+      HTML.match(/<>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<div>`)
+      });
+      if(HTML.match(/<\/>/g)){
+        HTML.match(/<\/>/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`</div>`)
+        });
       };
-      xmlhttp.open("GET", url, true);
-      xmlhttp.send();
     };
+    queryinsertion.innerHTML = HTML;
+  };
+
+  // XML Render Test
+  renderXML(url,get) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+            if (xmlhttp.status == 200) {
+                document.querySelector(get).innerHTML = xmlhttp.responseText;
+            }
+            else if (xmlhttp.status == 400) {
+              alert('There was an error 400');
+            }
+            else {
+                alert('something else other than 200 was returned');
+            }
+        }
+    };
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+  };
 }
+
+// Convert NitronDOM class to const : You can use nitronDOM without declaring variables or constants. 
 const nitronDOM = new NitronDOM();
+
+
 
 class Nitron {
   constructor() {};
+  // Create a component : nitron.component('component name',{return:`element`})
   component(elementName, ComponentOptions){
+
+    // Custom elements must contain - . If not present, the name dom- is added in front of the element name. 
     var Name = "";
     if(elementName.includes('-')){
       Name = elementName
     }else{
       Name = `dom-${elementName}`
     }
+
+    // Creating custom elements 
     customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
         if(ComponentOptions.return.match(/\{\{ ?innerHTML ?\}\}/g)){
@@ -79,11 +96,20 @@ class Nitron {
               let val = this.getAttribute(attr);
               optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
             });
-            this.outerHTML = optionsreturn;
+            ComponentOptions.return = optionsreturn;
           } else {
-            this.outerHTML = ComponentOptions.return
+            ComponentOptions.return = ComponentOptions.return
           }
         };
+        if(ComponentOptions.return.match(/\{\% ?.* ?\%\}/g)){
+          ComponentOptions.return.match(/\{\% ?.* ?\%\}/g).forEach((doc)=>{
+            this.outerHTML = ComponentOptions.return.replace(doc,eval(doc.slice(2,doc.length-2)));
+          });
+
+        }else{
+          this.outerHTML = ComponentOptions.return
+        }
+
         if(ComponentOptions.change){
           if(ComponentOptions.change.class){
             var elClass = `class="${ComponentOptions.change.class}"`
@@ -91,7 +117,8 @@ class Nitron {
           }else{
             this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
           }
-        }
+        };
+
       };
     });
   };
