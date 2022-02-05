@@ -66,6 +66,11 @@ class Nitron {
     }
     customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
+        if(ComponentOptions.return.match(/\{\{ ?innerHTML ?\}\}/g)){
+          ComponentOptions.return.match(/\{\{ ?innerHTML ?\}\}/g).forEach((doc)=>{
+            ComponentOptions.return = ComponentOptions.return.replace(doc,this.innerHTML)
+          });
+        }
         if (ComponentOptions.return) {
           if (this.getAttributeNames()) {
             const AttrNames = this.getAttributeNames();
@@ -78,12 +83,20 @@ class Nitron {
           } else {
             this.outerHTML = ComponentOptions.return
           }
+        };
+        if(ComponentOptions.change){
+          if(ComponentOptions.change.class){
+            var elClass = `class="${ComponentOptions.change.class}"`
+            this.outerHTML = `<${ComponentOptions.change.el} ${elClass}>${this.innerHTML}</${ComponentOptions.change.el}>`
+          }else{
+            this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
+          }
         }
-      }
+      };
     });
   };
-  ClassName(classname, classnamelist){ 
-    document.querySelector(classname).classList = classnamelist
+  addClass(query, classnamelist){ 
+    document.querySelector(query).classList = classnamelist
   };
   randomClassName() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
