@@ -1,19 +1,36 @@
 /*!
- * Nitron.js v0.0.5
+ * Nitron.js v0.0.5 - openbeta
  * (c) 2022 WADE Open Source Software and Nitron Team.
  * Released under the MIT License.
  */
 class NitronDOM {
     constructor() {};
     render(HTML, queryinsertion) {
-      if(HTML.includes('<>')){
-        HTML = HTML.replace('<>', '<div>');
+      if(HTML.match(/<[A-Z][a-z]*\/>/g)){
+        HTML.match(/<[A-Z][a-z]*\/>/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.slice(1,doc.length-2)}>`)
+        });
       }
-      // var DOMName = 'Google'
-      // HTML = HTML.replace(new RegExp(`<${DOMName} ?\\/>`,"g"),`<dom-${DOMName.toLowerCase()}></dom-${DOMName.toLowerCase()}>`)
-
-      // var word = "Q";
-      // console.log(word[0] === word[0].toUpperCase());
+      if(HTML.match(/<[A-Z]/g)){
+        HTML.match(/<[A-Z]/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`<dom-${doc[1]}`)
+        });
+        if(HTML.match(/\<\/[A-Z]/g)){
+          HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
+            HTML = HTML.replace(doc,`</dom-${doc[2]}`)
+          });
+        };
+      };
+      if(HTML.match(/<>/g)){
+        HTML.match(/<>/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`<div>`)
+        });
+        if(HTML.match(/<\/>/g)){
+          HTML.match(/<\/>/g).forEach((doc)=>{
+            HTML = HTML.replace(doc,`</div>`)
+          });
+        };
+      };
       
       queryinsertion.innerHTML = HTML;
     };
