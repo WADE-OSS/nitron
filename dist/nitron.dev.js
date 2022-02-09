@@ -38,6 +38,12 @@ class NitronDOM {
         });
       };
     };
+
+    let AjaxEvent = document.getElementById("root");
+    const xhr = new XMLHttpRequest();
+    AjaxEvent.addEventListener("change", () => {
+
+    })
     queryinsertion.innerHTML = HTML;
   };
 
