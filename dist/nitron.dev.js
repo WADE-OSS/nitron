@@ -1,8 +1,20 @@
-/*!
- * Nitron.js v0.0.5 - development-only release
- * (c) 2022 WADE Open Source Software and Nitron Team.
+/*
+ * Nitron.js v0.0.5 - openbeta
+ *
+ * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
+ * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
+
+// Error Event : #4
+window.addEventListener("error",(err)=>{
+  document.body.innerHTML = `
+    <h1 style="color:red;">${err.error}</h1>
+    <p>info : ${err.filename} | ${err.lineno}</p>
+    
+  `;
+});
+
 class NitronDOM {
   constructor() {};
 
