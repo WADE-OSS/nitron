@@ -21,7 +21,14 @@ class NitronDOM {
 
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-    element = nitron.returnDOM(element)
+    element = nitron.returnDOM(element);
+    
+    let AjaxEvent = queryinsertion;
+    const xhr = new XMLHttpRequest();
+    AjaxEvent.addEventListener("change", () => {
+
+    });
+    
     queryinsertion.innerHTML = element
   };
 };
