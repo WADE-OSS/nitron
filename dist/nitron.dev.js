@@ -1,17 +1,18 @@
 /*
- * Nitron.js v0.0.5 - openbeta
+ * Nitron.js v0.0.5 - dev
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
 
+
 // Error Event : #4
+// 1. 
 window.addEventListener("error",(err)=>{
   document.body.innerHTML = `
     <h1 style="color:red;">${err.error}</h1>
     <p>info : ${err.filename} | ${err.lineno}</p>
-    
   `;
 });
 
@@ -19,12 +20,27 @@ class NitronDOM {
   constructor() {};
 
   // Returns an element written in JS as HTML
-  // Todo List
-  // 1. Allow div to be used as <></> : Check - Available from version 0.0.5
-  // 2. < If the next first letter is uppercase, add dom- between them to call the custom element component of 'dom-name'. : Check - Available from version 0.0.5
-  // 3. Allows shortening to <custom-element/> when an element does not have an attribute : Check - Available from version 0.0.5
+  render(element, queryinsertion) {
+    element = nitron.returnDOM(element);
+    
+    let AjaxEvent = queryinsertion;
+    const xhr = new XMLHttpRequest();
+    AjaxEvent.addEventListener("change", () => {
 
-  render(HTML, queryinsertion) {
+    });
+    
+    queryinsertion.innerHTML = element
+  };
+};
+
+// Convert NitronDOM class to const : You can use nitronDOM without declaring variables or constants. 
+const nitronDOM = new NitronDOM();
+
+class Nitron {
+  constructor() {};
+
+  // Replace the Nitron syntax with HTML.
+  returnDOM(HTML){
     if(HTML.match(/<[A-Z][a-z]*\/>/g)){
       HTML.match(/<[A-Z][a-z]*\/>/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.slice(1,doc.length-2)}>`)
@@ -50,43 +66,9 @@ class NitronDOM {
         });
       };
     };
-
-    let AjaxEvent = document.getElementById("root");
-    const xhr = new XMLHttpRequest();
-    AjaxEvent.addEventListener("change", () => {
-
-    })
-    queryinsertion.innerHTML = HTML;
+    return HTML;
   };
 
-  // XML Render Test
-  renderXML(url,get) {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-            if (xmlhttp.status == 200) {
-                document.querySelector(get).innerHTML = xmlhttp.responseText;
-            }
-            else if (xmlhttp.status == 400) {
-              alert('There was an error 400');
-            }
-            else {
-                alert('something else other than 200 was returned');
-            }
-        }
-    };
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
-  };
-}
-
-// Convert NitronDOM class to const : You can use nitronDOM without declaring variables or constants. 
-const nitronDOM = new NitronDOM();
-
-
-
-class Nitron {
-  constructor() {};
   // Create a component : nitron.component('component name',{return:`element`})
   component(elementName, ComponentOptions){
 
@@ -137,9 +119,11 @@ class Nitron {
       };
     });
   };
+
   addClass(query, classnamelist){ 
     document.querySelector(query).classList = classnamelist
   };
+
   randomClassName() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
     const stringLength = 8
@@ -150,6 +134,7 @@ class Nitron {
     }
     return randomstring
   };
+
   style(selector, style) {
     if (!document.styleSheets) return;
     if (document.getElementsByTagName('head').length == 0) return;
