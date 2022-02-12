@@ -21,14 +21,7 @@ class NitronDOM {
 
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-    element = nitron.returnDOM(element);
-    
-    let AjaxEvent = queryinsertion;
-    const xhr = new XMLHttpRequest();
-    AjaxEvent.addEventListener("change", () => {
-
-    });
-    
+    element = nitron.returnDOM(element)
     queryinsertion.innerHTML = element
   };
 };
@@ -41,11 +34,15 @@ class Nitron {
 
   // Replace the Nitron syntax with HTML.
   returnDOM(HTML){
-    if(HTML.match(/<[A-Z][a-z]*\/>/g)){
-      HTML.match(/<[A-Z][a-z]*\/>/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.slice(1,doc.length-2)}>`)
+
+    if(HTML.match(/<[A-Z].* ?\/>/g)){
+
+      HTML.match(/<[A-Z].* ?\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.match(/[A-Z][a-z]*/g)}>`);
       });
-    }
+
+    };
+
     if(HTML.match(/<[A-Z]/g)){
       HTML.match(/<[A-Z]/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<dom-${doc[1]}`)
@@ -56,6 +53,7 @@ class Nitron {
         });
       };
     };
+
     if(HTML.match(/<>/g)){
       HTML.match(/<>/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<div>`)
@@ -83,14 +81,8 @@ class Nitron {
     // Creating custom elements 
     customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.return) {
-          
-          if(ComponentOptions.return.match(/\{\{ ?innerHTML ?\}\}/g)){
-            ComponentOptions.return.match(/\{\{ ?innerHTML ?\}\}/g).forEach((doc)=>{
-              ComponentOptions.return = ComponentOptions.return.replace(doc,this.innerHTML)
-            });
-          };
-          
+        if (ComponentOptions.return) { 
+          ComponentOptions.return = nitron.returnDOM(ComponentOptions.return);
           // custom Attribute : {{AttributeNames}} => AttributeNames=""
           if (this.getAttributeNames()) {
             const AttrNames = this.getAttributeNames();
