@@ -8,7 +8,6 @@
 
 
 // Error Event : #4
-// 1. 
 window.addEventListener("error",(err)=>{
   document.body.innerHTML = `
     <h1 style="color:red;">${err.error}</h1>
@@ -238,7 +237,14 @@ function styles(style="") {
 };
 
 const nitron = new Nitron();
-  
+
+// Template
+/*
+  var data = {title:"Nitron.js"}
+  <Template data="data">
+    <h1>{{title}}</h1>
+  </Template>
+*/
 var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
@@ -267,3 +273,19 @@ var placeholders = function (template, data) {'use strict';
   });
   return template;
 };
+
+customElements.define('dom-template', class extends HTMLElement {
+  connectedCallback() {
+    let Template_data = this.getAttribute('data');
+    Template_data = eval(Template_data);
+    let HTML = "";
+    if(Array.isArray(Template_data)){
+      Template_data.forEach(element => {
+        HTML += placeholders(this.innerHTML,element);
+      });
+    }else{
+      HTML = placeholders(this.innerHTML,Template_data);
+    }
+    this.outerHTML = HTML;
+  };
+});
