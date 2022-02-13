@@ -1,40 +1,88 @@
-/*!
- * Nitron.js v0.0.4
- * (c) 2022 WADE Open Source Software and Nitron Team.
+/*
+ * Nitron.js v0.0.5
+ *
+ * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
+ * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
+
+
+// Error Event : #4
+window.addEventListener("error",(err)=>{
+  document.body.innerHTML = `
+    <h1 style="color:red;">${err.error}</h1>
+    <p>info : ${err.filename} | ${err.lineno}</p>
+  `;
+});
+
 class NitronDOM {
-    constructor() {};
-    render(code, queryinsertion) {
-      queryinsertion.innerHTML = code;
-    };
-      renderXML(url,get) {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-          if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-             if (xmlhttp.status == 200) {
-                  document.querySelector(get).innerHTML = xmlhttp.responseText;
-             }
-             else if (xmlhttp.status == 400) {
-                alert('There was an error 400');
-             }
-             else {
-                 alert('something else other than 200 was returned');
-             }
-          }
-      };
-      xmlhttp.open("GET", url, true);
-      xmlhttp.send();
-    };
-}
+  constructor() {};
+
+  // Returns an element written in JS as HTML
+  render(element, queryinsertion) {
+    element = nitron.returnDOM(element)
+    queryinsertion.innerHTML = element
+  };
+};
+
+// Convert NitronDOM class to const : You can use nitronDOM without declaring variables or constants. 
 const nitronDOM = new NitronDOM();
 
 class Nitron {
   constructor() {};
+
+  // Replace the Nitron syntax with HTML.
+  returnDOM(HTML){
+
+    if(HTML.match(/<[A-Z].* ?\/>/g)){
+
+      HTML.match(/<[A-Z].* ?\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.match(/[A-Z][a-z]*/g)}>`);
+      });
+
+    };
+
+    if(HTML.match(/<[A-Z]/g)){
+      HTML.match(/<[A-Z]/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<dom-${doc[1]}`)
+      });
+      if(HTML.match(/\<\/[A-Z]/g)){
+        HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`</dom-${doc[2]}`)
+        });
+      };
+    };
+
+    if(HTML.match(/<>/g)){
+      HTML.match(/<>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<div>`)
+      });
+      if(HTML.match(/<\/>/g)){
+        HTML.match(/<\/>/g).forEach((doc)=>{
+          HTML = HTML.replace(doc,`</div>`)
+        });
+      };
+    };
+    return HTML;
+  };
+
+  // Create a component : nitron.component('component name',{return:`element`})
   component(elementName, ComponentOptions){
-    customElements.define(`${elementName}`, class extends HTMLElement {
+
+    // Custom elements must contain - . If not present, the name dom- is added in front of the element name. 
+    var Name = "";
+    if(elementName.includes('-')){
+      Name = elementName
+    }else{
+      Name = `dom-${elementName}`
+    }
+
+    // Creating custom elements 
+    customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.return) {
+        if (ComponentOptions.return) { 
+          ComponentOptions.return = nitron.returnDOM(ComponentOptions.return);
+          // custom Attribute : {{AttributeNames}} => AttributeNames=""
           if (this.getAttributeNames()) {
             const AttrNames = this.getAttributeNames();
             var optionsreturn = ComponentOptions.return;
@@ -45,14 +93,28 @@ class Nitron {
             this.outerHTML = optionsreturn;
           } else {
             this.outerHTML = ComponentOptions.return
+          };
+
+        };
+
+        // change Element
+        if(ComponentOptions.change){
+          if(ComponentOptions.change.class){
+            var elClass = `class="${ComponentOptions.change.class}"`
+            this.outerHTML = `<${ComponentOptions.change.el} ${elClass}>${this.innerHTML}</${ComponentOptions.change.el}>`
+          }else{
+            this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
           }
-        }
-      }
+        };
+
+      };
     });
   };
-  ClassName(classname, classnamelist){ 
-    document.querySelector(classname).classList = classnamelist
+
+  addClass(query, classnamelist){ 
+    document.querySelector(query).classList = classnamelist
   };
+
   randomClassName() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
     const stringLength = 8
@@ -63,6 +125,7 @@ class Nitron {
     }
     return randomstring
   };
+
   style(selector, style) {
     if (!document.styleSheets) return;
     if (document.getElementsByTagName('head').length == 0) return;
@@ -174,7 +237,14 @@ function styles(style="") {
 };
 
 const nitron = new Nitron();
-  
+
+// Template
+/*
+  var data = {title:"Nitron.js"}
+  <Template data="data">
+    <h1>{{title}}</h1>
+  </Template>
+*/
 var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
@@ -203,3 +273,19 @@ var placeholders = function (template, data) {'use strict';
   });
   return template;
 };
+
+customElements.define('dom-template', class extends HTMLElement {
+  connectedCallback() {
+    let Template_data = this.getAttribute('data');
+    Template_data = eval(Template_data);
+    let HTML = "";
+    if(Array.isArray(Template_data)){
+      Template_data.forEach(element => {
+        HTML += placeholders(this.innerHTML,element);
+      });
+    }else{
+      HTML = placeholders(this.innerHTML,Template_data);
+    }
+    this.outerHTML = HTML;
+  };
+});
