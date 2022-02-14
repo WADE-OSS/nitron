@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.5 - dev
+ * Nitron.js v0.0.6 - dev (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
