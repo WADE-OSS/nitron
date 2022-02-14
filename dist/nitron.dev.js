@@ -17,10 +17,24 @@ window.addEventListener("error",(err)=>{
 
 class NitronDOM {
   constructor() {};
-
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-    element = nitron.returnDOM(element)
+    element = nitron.returnDOM(element);
+
+    const xhr = new XMLHttpRequest();
+
+    queryinsertion.addEventListener("change", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+
+    queryinsertion.addEventListener("input", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+
     queryinsertion.innerHTML = element
   };
 };
@@ -276,15 +290,19 @@ var placeholders = function (template, data) {'use strict';
 
 customElements.define('dom-template', class extends HTMLElement {
   connectedCallback() {
-    let Template_data = this.getAttribute('data');
-    Template_data = eval(Template_data);
     let HTML = "";
-    if(Array.isArray(Template_data)){
-      Template_data.forEach(element => {
-        HTML += placeholders(this.innerHTML,element);
-      });
+    if(this.getAttribute('data')){
+      let Template_data = this.getAttribute('data');
+      Template_data = eval(Template_data);
+      if(Array.isArray(Template_data)){
+        Template_data.forEach(element => {
+          HTML += placeholders(this.innerHTML,element);
+        });
+      }else{
+        HTML = placeholders(this.innerHTML,Template_data);
+      };
     }else{
-      HTML = placeholders(this.innerHTML,Template_data);
+      HTML = this.innerHTML;
     }
     this.outerHTML = HTML;
   };
