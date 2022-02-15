@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.5 - dev
+ * Nitron.js v0.0.6 - dev (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
@@ -17,10 +17,24 @@ window.addEventListener("error",(err)=>{
 
 class NitronDOM {
   constructor() {};
-
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-    element = nitron.returnDOM(element)
+    element = nitron.returnDOM(element);
+
+    const xhr = new XMLHttpRequest();
+
+    queryinsertion.addEventListener("change", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+
+    queryinsertion.addEventListener("input", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+
     queryinsertion.innerHTML = element
   };
 };
@@ -80,31 +94,32 @@ class Nitron {
     // Creating custom elements 
     customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.return) { 
-          ComponentOptions.return = nitron.returnDOM(ComponentOptions.return);
-          // custom Attribute : {{AttributeNames}} => AttributeNames=""
+        if (ComponentOptions.template) { 
+          ComponentOptions.template = nitron.returnDOM(ComponentOptions.template);
+
+          // custom Attribute :  AttributeNames="" => {{AttributeNames}}
           if (this.getAttributeNames()) {
             const AttrNames = this.getAttributeNames();
-            var optionsreturn = ComponentOptions.return;
+            var optionsreturn = ComponentOptions.template;
             AttrNames.forEach(attr => {
               let val = this.getAttribute(attr);
               optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
             });
-            this.outerHTML = optionsreturn;
+            ComponentOptions.template = optionsreturn;
           } else {
-            this.outerHTML = ComponentOptions.return
+            ComponentOptions.template = ComponentOptions.template
           };
 
-        };
+          // Fill in the created props if they are empty 
+          if(ComponentOptions.props){
+            Object.keys(ComponentOptions.props).forEach(x => {
+              ComponentOptions.template = ComponentOptions.template.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
+            });
+          };
 
-        // change Element
-        if(ComponentOptions.change){
-          if(ComponentOptions.change.class){
-            var elClass = `class="${ComponentOptions.change.class}"`
-            this.outerHTML = `<${ComponentOptions.change.el} ${elClass}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }else{
-            this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }
+          this.outerHTML = ComponentOptions.template;
+        }else if(ComponentOptions.el){
+          this.outerHTML = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
         };
 
       };
@@ -278,14 +293,19 @@ customElements.define('dom-template', class extends HTMLElement {
   connectedCallback() {
     let Template_data = this.getAttribute('data');
     Template_data = eval(Template_data);
-    let HTML = "";
-    if(Array.isArray(Template_data)){
-      Template_data.forEach(element => {
-        HTML += placeholders(this.innerHTML,element);
-      });
+    let HTML = '<span style="color: red;">unknown error</span>';
+
+    if(this.getAttribute('data')){
+      if(Array.isArray(Template_data)){
+        Template_data.forEach(element => {
+          HTML += placeholders(this.innerHTML,element);
+        });
+      }else{
+        HTML = placeholders(this.innerHTML,Template_data);
+      };
     }else{
-      HTML = placeholders(this.innerHTML,Template_data);
-    }
+      HTML = this.innerHTML;
+    };
     this.outerHTML = HTML;
   };
 });
