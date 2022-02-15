@@ -94,31 +94,32 @@ class Nitron {
     // Creating custom elements 
     customElements.define(`${Name}`, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.return) { 
-          ComponentOptions.return = nitron.returnDOM(ComponentOptions.return);
-          // custom Attribute : {{AttributeNames}} => AttributeNames=""
+        if (ComponentOptions.template) { 
+          ComponentOptions.template = nitron.returnDOM(ComponentOptions.template);
+
+          // custom Attribute :  AttributeNames="" => {{AttributeNames}}
           if (this.getAttributeNames()) {
             const AttrNames = this.getAttributeNames();
-            var optionsreturn = ComponentOptions.return;
+            var optionsreturn = ComponentOptions.template;
             AttrNames.forEach(attr => {
               let val = this.getAttribute(attr);
               optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
             });
-            this.outerHTML = optionsreturn;
+            ComponentOptions.template = optionsreturn;
           } else {
-            this.outerHTML = ComponentOptions.return
+            ComponentOptions.template = ComponentOptions.template
           };
 
-        };
+          // Fill in the created props if they are empty 
+          if(ComponentOptions.props){
+            Object.keys(ComponentOptions.props).forEach(x => {
+              ComponentOptions.template = ComponentOptions.template.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
+            });
+          };
 
-        // change Element
-        if(ComponentOptions.change){
-          if(ComponentOptions.change.class){
-            var elClass = `class="${ComponentOptions.change.class}"`
-            this.outerHTML = `<${ComponentOptions.change.el} ${elClass}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }else{
-            this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }
+          this.outerHTML = ComponentOptions.template;
+        }else if(ComponentOptions.el){
+          this.outerHTML = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
         };
 
       };
@@ -304,9 +305,7 @@ customElements.define('dom-template', class extends HTMLElement {
       };
     }else{
       HTML = this.innerHTML;
-    }
-
+    };
     this.outerHTML = HTML;
-
   };
 });
