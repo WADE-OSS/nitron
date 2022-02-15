@@ -290,10 +290,11 @@ var placeholders = function (template, data) {'use strict';
 
 customElements.define('dom-template', class extends HTMLElement {
   connectedCallback() {
-    let HTML = "";
+    let Template_data = this.getAttribute('data');
+    Template_data = eval(Template_data);
+    let HTML = '<span style="color: red;">unknown error</span>';
+
     if(this.getAttribute('data')){
-      let Template_data = this.getAttribute('data');
-      Template_data = eval(Template_data);
       if(Array.isArray(Template_data)){
         Template_data.forEach(element => {
           HTML += placeholders(this.innerHTML,element);
@@ -304,6 +305,8 @@ customElements.define('dom-template', class extends HTMLElement {
     }else{
       HTML = this.innerHTML;
     }
+
     this.outerHTML = HTML;
+
   };
 });
