@@ -116,12 +116,32 @@ class Nitron {
               ComponentOptions.template = ComponentOptions.template.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
             });
           };
-
-          this.outerHTML = ComponentOptions.template;
         }else if(ComponentOptions.el){
-          this.outerHTML = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
+          let ClassName = "";
+          if(ComponentOptions.class){
+            
+          }
+
+          if(ComponentOptions.class){
+
+          }
+
+          if(ComponentOptions.props){
+            ComponentOptions.props.forEach((x)=>{
+              console.log(x)
+            });
+          }else{
+            ComponentOptions.template = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
+          }
         };
 
+        if(ComponentOptions.from){
+          if(ComponentOptions.from == this.parentElement.localName){
+            this.outerHTML = ComponentOptions.template;
+          }
+        }else{
+          this.outerHTML = ComponentOptions.template;
+        }
       };
     });
   };
@@ -164,7 +184,7 @@ class Nitron {
             styleSheet = document.styleSheets[i];
           }
         }
-  
+
         if (typeof styleSheet !== 'undefined')
           break;
       }
@@ -288,7 +308,6 @@ var placeholders = function (template, data) {'use strict';
   });
   return template;
 };
-
 customElements.define('dom-template', class extends HTMLElement {
   connectedCallback() {
     let Template_data = this.getAttribute('data');
