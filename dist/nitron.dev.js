@@ -118,26 +118,21 @@ class Nitron {
           };
         }else if(ComponentOptions.el){
           let ClassName = "";
-          if(ComponentOptions.class){
-            
-          }
-
-          if(ComponentOptions.class){
-
-          }
 
           if(ComponentOptions.props){
             ComponentOptions.props.forEach((x)=>{
               console.log(x)
             });
           }else{
-            ComponentOptions.template = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
+            ComponentOptions.template = `<${ComponentOptions.el} id="${elementName}">${this.innerHTML}</${ComponentOptions.el}>`;
           }
         };
 
         if(ComponentOptions.from){
           if(ComponentOptions.from == this.parentElement.localName){
             this.outerHTML = ComponentOptions.template;
+          }else{
+            this.outerHTML = ""
           }
         }else{
           this.outerHTML = ComponentOptions.template;
