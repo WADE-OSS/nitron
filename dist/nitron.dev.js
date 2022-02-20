@@ -6,7 +6,6 @@
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
 
-
 // Error Event : #4
 window.addEventListener("error",(err)=>{
   document.body.innerHTML = `
@@ -34,8 +33,8 @@ class NitronDOM {
         eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
       };
     });
-
-    queryinsertion.innerHTML = element
+    
+    queryinsertion.innerHTML = element;
   };
 };
 
@@ -80,88 +79,39 @@ class Nitron {
     return HTML;
   };
 
-  // Create a component : nitron.component('component name',{return:`element`})
+  // Create a component
   component(elementName, ComponentOptions){
-
-    // Custom elements must contain - . If not present, the name dom- is added in front of the element name. 
-    var Name = "";
+    let componentName = "";
     if(elementName.includes('-')){
-      Name = elementName
+      componentName = elementName
     }else{
-      Name = `dom-${elementName}`
-    }
-
-    // Creating custom elements 
-    customElements.define(`${Name}`, class extends HTMLElement {
+      componentName = `dom-${elementName}`
+    };
+    customElements.define(componentName, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.template) { 
-          ComponentOptions.template = nitron.returnDOM(ComponentOptions.template);
-
-          // custom Attribute :  AttributeNames="" => {{AttributeNames}}
-          if (this.getAttributeNames()) {
-            const AttrNames = this.getAttributeNames();
-            var optionsreturn = ComponentOptions.template;
-            AttrNames.forEach(attr => {
-              let val = this.getAttribute(attr);
-              optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
-            });
-            ComponentOptions.template = optionsreturn;
-          } else {
-            ComponentOptions.template = ComponentOptions.template
-          };
-
-          // Fill in the created props if they are empty 
-          if(ComponentOptions.props){
-            Object.keys(ComponentOptions.props).forEach(x => {
-              ComponentOptions.template = ComponentOptions.template.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
-            });
-          };
-        }else if(ComponentOptions.el){
-          let ClassName = "";
-
-          if(ComponentOptions.props){
-            ComponentOptions.props.forEach((x)=>{
-              console.log(x)
-            });
-          }else{
-            ComponentOptions.template = `<${ComponentOptions.el} id="${elementName}">${this.innerHTML}</${ComponentOptions.el}>`;
-          }
+        let componentTemplate = nitron.returnDOM(ComponentOptions.template);
+        if(this.getAttributeNames()) {
+          const AttrNames = this.getAttributeNames();
+          AttrNames.forEach(attr => {
+            let val = this.getAttribute(attr);
+            componentTemplate = componentTemplate.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"),val);
+          });
         };
-
-        if(ComponentOptions.from){
-          if(ComponentOptions.from == this.parentElement.localName){
-            this.outerHTML = ComponentOptions.template;
-          }else{
-            this.outerHTML = ""
-          }
-        }else{
-          this.outerHTML = ComponentOptions.template;
-        }
+  
+        if(ComponentOptions.props){
+          Object.keys(ComponentOptions.props).forEach(x => {
+            componentTemplate = componentTemplate.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
+          });
+        };
+        this.outerHTML = componentTemplate;
       };
     });
   };
-
-  addClass(query, classnamelist){ 
-    document.querySelector(query).classList = classnamelist
-  };
-
-  randomClassName() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
-    const stringLength = 8
-    let randomstring = ''
-    for (let i = 0; i < stringLength; i++) {
-      const rnum = Math.floor(Math.random() * chars.length)
-      randomstring += chars.substring(rnum, rnum + 1)
-    }
-    return randomstring
-  };
-
-  style(selector, style) {
+  //  Element creation, Style creation API (#10) - Style creation
+  styles(selector, style){
     if (!document.styleSheets) return;
     if (document.getElementsByTagName('head').length == 0) return;
-  
     var styleSheet,mediaType;
-  
     if (document.styleSheets.length > 0) {
       for (var i = 0, l = document.styleSheets.length; i < l; i++) {
         if (document.styleSheets[i].disabled)
@@ -179,7 +129,6 @@ class Nitron {
             styleSheet = document.styleSheets[i];
           }
         }
-
         if (typeof styleSheet !== 'undefined')
           break;
       }
@@ -194,10 +143,8 @@ class Nitron {
         }
         styleSheet = document.styleSheets[i];
       }
-  
       mediaType = typeof styleSheet.media;
     }
-  
     if (mediaType === 'string') {
       for (var i = 0, l = styleSheet.rules.length; i < l; i++) {
         if(styleSheet.rules[i].selectorText && styleSheet.rules[i].selectorText.toLowerCase()==selector.toLowerCase()) {
@@ -218,52 +165,18 @@ class Nitron {
       styleSheet.insertRule(selector + '{' + style + '}', styleSheetLength);
     }
   };
-};
-
-function styles(style="") {
-  const name = nitron.randomClassName()
-  nitron.style(`.${name}`,style)
-  if(style.style){
-    nitron.style(`.${name}`,style.style)
+  //  Element creation, Style creation API (#10) - Element creation
+  createElement(element, props,innerHTML=""){
+    if(props == null || undefined){
+      return `<${element}>${innerHTML}</${element}>`
+    }else{
+      let Attribute = "";
+      Object.keys(props).forEach((element) => {
+        Attribute += `${element}="${props[element]}"`
+      });
+      return `<${element} ${Attribute}>${innerHTML}</${element}>`
+    };
   };
-  if(style.type){
-    Object.keys(style.type).forEach(x =>
-      nitron.style(`.${name}:${x}`,style.type[x])
-    )
-  };
-  if(style.media){
-    var mediaquery = window.matchMedia(`screen and (${style.media.size})`);
-
-    if (mediaquery.matches) {
-      nitron.style(`.${name}`,style.media.style);
-      if(style.media.type){
-        Object.keys(style.media.type).forEach(x =>
-          nitron.style(`.${name}:${x}`,style.media.type[x])
-        )
-      };
-    }
-
-    mediaquery.addListener((a) => {
-      if(a.matches === true){
-         nitron.style(`.${name}`,style.media.style)
-        if(style.media.type){
-          Object.keys(style.media.type).forEach(x =>
-            nitron.style(`.${name}:${x}`,style.media.type[x])
-          )
-        }
-      }else{
-        if(style.style){
-          nitron.style(`.${name}`,style.style)
-          if(style.type){
-            Object.keys(style.type).forEach(x =>
-              nitron.style(`.${name}:${x}`,style.type[x])
-            )
-          };
-        };
-      }
-    });
-  };
-  return name
 };
 
 const nitron = new Nitron();
@@ -275,6 +188,7 @@ const nitron = new Nitron();
     <h1>{{title}}</h1>
   </Template>
 */
+
 var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
@@ -303,8 +217,10 @@ var placeholders = function (template, data) {'use strict';
   });
   return template;
 };
+
+
 customElements.define('dom-template', class extends HTMLElement {
-  connectedCallback() {
+  DOM(){
     let Template_data = this.getAttribute('data');
     Template_data = eval(Template_data);
     let HTML = '<span style="color: red;">unknown error</span>';
@@ -321,5 +237,8 @@ customElements.define('dom-template', class extends HTMLElement {
       HTML = this.innerHTML;
     };
     this.outerHTML = HTML;
+  }
+  connectedCallback() {
+    this.DOM()
   };
 });
