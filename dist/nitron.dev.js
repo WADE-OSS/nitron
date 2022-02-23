@@ -76,6 +76,8 @@ class Nitron {
         });
       };
     };
+    HTML = HTML.replace(/\s+</g,"<")
+    HTML = HTML.replace(/>\s+</g,"><")
     return HTML;
   };
 
