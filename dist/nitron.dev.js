@@ -1,311 +1,102 @@
-/*
- * Nitron.js v0.0.6 - dev (v1.0.0-alpha.1)
- *
- * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
- * Released under the MIT License.
- * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
- */
+nitron.styles('body','margin: 0;');
+nitron.styles('img','width: 100%;');
 
+// <img src="https://www.agoda.com/wp-content/uploads/2019/01/Things-to-do-in-Tokyo-Tokyo-Tower.jpg">
 
-// Error Event : #4
-window.addEventListener("error",(err)=>{
-  document.body.innerHTML = `
-    <h1 style="color:red;">${err.error}</h1>
-    <p>info : ${err.filename} | ${err.lineno}</p>
-  `;
+nitron.component('contents',{
+  template:`
+    <Card>
+      <Box p="16px">
+        <Text size="20px" weight="700">Japan, Tokyo</Text>
+        <Text size="14px" mt="15px" mb="10px">The Japanese landscape is rugged, with more than four-fifths of the land surface consisting of mountains.</Text>
+        <Button href="#">more...</Button>
+      </Box>
+    </Card>
+  `
 });
 
-class NitronDOM {
-  constructor() {};
-  // Returns an element written in JS as HTML
-  render(element, queryinsertion) {
-    element = nitron.returnDOM(element);
+nitron.component('ccc',{
+  template:`
+    <Card>
+      <Box p="16px">
+        <Text size="20px" weight="700">Japan,1</Text>
+        <Text size="14px" mt="15px" mb="10px">The Japanese landscape is rugged, with more than four-fifths of the land surface consisting of mountains.</Text>
+        <Button href="#">more...</Button>
+      </Box>
+    </Card>
+  `
+});
 
-    const xhr = new XMLHttpRequest();
+const App = `
+  <Box mx="20%" my="100px">
+    <Link to="/">Home</Link>
+    <Link to="/test">Test</Link>
+    <Router path="/" el="<Contents />" />
+    <Router path="/test" el="<Ccc />" />
+  </Box>
+`
 
-    queryinsertion.addEventListener("change", (event) => {
-      if(event.target.getAttribute('value-in')){
-        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
-      };
-    });
+nitronDOM.render(App,document.getElementById('root'));
 
-    queryinsertion.addEventListener("input", (event) => {
-      if(event.target.getAttribute('value-in')){
-        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
-      };
-    });
-
-    queryinsertion.innerHTML = element
-  };
-};
-
-// Convert NitronDOM class to const : You can use nitronDOM without declaring variables or constants. 
-const nitronDOM = new NitronDOM();
-
-class Nitron {
-  constructor() {};
-
-  // Replace the Nitron syntax with HTML.
-  returnDOM(HTML){
-
-    if(HTML.match(/<[A-Z].* ?\/>/g)){
-
-      HTML.match(/<[A-Z].* ?\/>/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.match(/[A-Z][a-z]*/g)}>`);
-      });
-
-    };
-
-    if(HTML.match(/<[A-Z]/g)){
-      HTML.match(/<[A-Z]/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`<dom-${doc[1]}`)
-      });
-      if(HTML.match(/\<\/[A-Z]/g)){
-        HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
-          HTML = HTML.replace(doc,`</dom-${doc[2]}`)
-        });
-      };
-    };
-
-    if(HTML.match(/<>/g)){
-      HTML.match(/<>/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`<div>`)
-      });
-      if(HTML.match(/<\/>/g)){
-        HTML.match(/<\/>/g).forEach((doc)=>{
-          HTML = HTML.replace(doc,`</div>`)
-        });
-      };
-    };
-    return HTML;
-  };
-
-  // Create a component : nitron.component('component name',{return:`element`})
-  component(elementName, ComponentOptions){
-
-    // Custom elements must contain - . If not present, the name dom- is added in front of the element name. 
-    var Name = "";
-    if(elementName.includes('-')){
-      Name = elementName
-    }else{
-      Name = `dom-${elementName}`
-    }
-
-    // Creating custom elements 
-    customElements.define(`${Name}`, class extends HTMLElement {
-      connectedCallback() {
-        if (ComponentOptions.template) { 
-          ComponentOptions.template = nitron.returnDOM(ComponentOptions.template);
-
-          // custom Attribute :  AttributeNames="" => {{AttributeNames}}
-          if (this.getAttributeNames()) {
-            const AttrNames = this.getAttributeNames();
-            var optionsreturn = ComponentOptions.template;
-            AttrNames.forEach(attr => {
-              let val = this.getAttribute(attr);
-              optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
-            });
-            ComponentOptions.template = optionsreturn;
-          } else {
-            ComponentOptions.template = ComponentOptions.template
-          };
-
-          // Fill in the created props if they are empty 
-          if(ComponentOptions.props){
-            Object.keys(ComponentOptions.props).forEach(x => {
-              ComponentOptions.template = ComponentOptions.template.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
-            });
-          };
-
-          this.outerHTML = ComponentOptions.template;
-        }else if(ComponentOptions.el){
-          this.outerHTML = `<${ComponentOptions.el}>${this.innerHTML}</${ComponentOptions.el}>`;
-        };
-
-      };
-    });
-  };
-
-  addClass(query, classnamelist){ 
-    document.querySelector(query).classList = classnamelist
-  };
-
-  randomClassName() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
-    const stringLength = 8
-    let randomstring = ''
-    for (let i = 0; i < stringLength; i++) {
-      const rnum = Math.floor(Math.random() * chars.length)
-      randomstring += chars.substring(rnum, rnum + 1)
-    }
-    return randomstring
-  };
-
-  style(selector, style) {
-    if (!document.styleSheets) return;
-    if (document.getElementsByTagName('head').length == 0) return;
-  
-    var styleSheet,mediaType;
-  
-    if (document.styleSheets.length > 0) {
-      for (var i = 0, l = document.styleSheets.length; i < l; i++) {
-        if (document.styleSheets[i].disabled)
-          continue;
-        var media = document.styleSheets[i].media;
-        mediaType = typeof media;
-  
-        if (mediaType === 'string') {
-          if (media === '' || (media.indexOf('screen') !== -1)) {
-            styleSheet = document.styleSheets[i];
-          }
-        }
-        else if (mediaType=='object') {
-          if (media.mediaText === '' || (media.mediaText.indexOf('screen') !== -1)) {
-            styleSheet = document.styleSheets[i];
-          }
-        }
-  
-        if (typeof styleSheet !== 'undefined')
-          break;
-      }
-    }
-    if (typeof styleSheet === 'undefined') {
-      var styleSheetElement = document.createElement('style');
-      document.getElementsByTagName('head')[0].appendChild(styleSheetElement);
-  
-      for (i = 0; i < document.styleSheets.length; i++) {
-        if (document.styleSheets[i].disabled) {
-          continue;
-        }
-        styleSheet = document.styleSheets[i];
-      }
-  
-      mediaType = typeof styleSheet.media;
-    }
-  
-    if (mediaType === 'string') {
-      for (var i = 0, l = styleSheet.rules.length; i < l; i++) {
-        if(styleSheet.rules[i].selectorText && styleSheet.rules[i].selectorText.toLowerCase()==selector.toLowerCase()) {
-          styleSheet.rules[i].style.cssText = style;
-          return;
-        }
-      }
-      styleSheet.addRule(selector,style);
-    }
-    else if (mediaType === 'object') {
-      var styleSheetLength = (styleSheet.cssRules) ? styleSheet.cssRules.length : 0;
-      for (var i = 0; i < styleSheetLength; i++) {
-        if (styleSheet.cssRules[i].selectorText && styleSheet.cssRules[i].selectorText.toLowerCase() == selector.toLowerCase()) {
-          styleSheet.cssRules[i].style.cssText = style;
-          return;
-        }
-      }
-      styleSheet.insertRule(selector + '{' + style + '}', styleSheetLength);
-    }
-  };
-};
-
-function styles(style="") {
-  const name = nitron.randomClassName()
-  nitron.style(`.${name}`,style)
-  if(style.style){
-    nitron.style(`.${name}`,style.style)
-  };
-  if(style.type){
-    Object.keys(style.type).forEach(x =>
-      nitron.style(`.${name}:${x}`,style.type[x])
-    )
-  };
-  if(style.media){
-    var mediaquery = window.matchMedia(`screen and (${style.media.size})`);
-
-    if (mediaquery.matches) {
-      nitron.style(`.${name}`,style.media.style);
-      if(style.media.type){
-        Object.keys(style.media.type).forEach(x =>
-          nitron.style(`.${name}:${x}`,style.media.type[x])
-        )
-      };
-    }
-
-    mediaquery.addListener((a) => {
-      if(a.matches === true){
-         nitron.style(`.${name}`,style.media.style)
-        if(style.media.type){
-          Object.keys(style.media.type).forEach(x =>
-            nitron.style(`.${name}:${x}`,style.media.type[x])
-          )
-        }
-      }else{
-        if(style.style){
-          nitron.style(`.${name}`,style.style)
-          if(style.type){
-            Object.keys(style.type).forEach(x =>
-              nitron.style(`.${name}:${x}`,style.type[x])
-            )
-          };
-        };
-      }
-    });
-  };
-  return name
-};
-
-const nitron = new Nitron();
-
-// Template
-/*
-  var data = {title:"Nitron.js"}
-  <Template data="data">
-    <h1>{{title}}</h1>
-  </Template>
-*/
-var placeholders = function (template, data) {'use strict';
-  template = typeof (template) === 'function' ? template() : template;
-  if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
-  if (!data) return template;
-  template = template.replace(/\{\{([^}]+)\}\}/g, function (match) {
-    match = match.slice(2, -2);
-    var sub = match.split('.');
-
-    if (sub.length > 1) {
-      var temp = data;
-
-      sub.forEach(function (item) {
-        var item = item.trim();
-        if (!temp[item]) {
-          temp = '{{' + match.trim() + '}}';
-          return;
-        }
-        temp = temp[item];
-      });
-      return temp;
-    }
-    else {
-      if (!data[match.trim()]) return '{{' + match.trim() + '}}';
-      return data[match.trim()];
-    }
-  });
-  return template;
-};
-
-customElements.define('dom-template', class extends HTMLElement {
+customElements.define('dom-link', class extends HTMLElement {
   connectedCallback() {
-    let Template_data = this.getAttribute('data');
-    Template_data = eval(Template_data);
-    let HTML = '<span style="color: red;">unknown error</span>';
-
-    if(this.getAttribute('data')){
-      if(Array.isArray(Template_data)){
-        Template_data.forEach(element => {
-          HTML += placeholders(this.innerHTML,element);
-        });
-      }else{
-        HTML = placeholders(this.innerHTML,Template_data);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
+    let className = "";
+    let props = {};  
+    if(this.getAttribute('to')){
+      for (let i = 0; i < 8; i++) {
+        const rnum = Math.floor(Math.random() * chars.length)
+        className += chars.substring(rnum, rnum + 1)
       };
-    }else{
-      HTML = this.innerHTML;
+      Object.assign(props,{class:className});
     };
-    this.outerHTML = HTML;
+    if(this.getAttributeNames()) {  
+      const AttrNames = this.getAttributeNames();
+      AttrNames.forEach(attr => { 
+        if(attr == "to"){
+          Object.assign(props,{href:this.getAttribute(attr)});
+        }else{
+          if(props[attr]){
+            props[attr] += ` ${this.getAttribute(attr)}`;
+          }else{
+            props[attr] = `${this.getAttribute(attr)}`;
+          };
+        }
+      });
+    };
+    this.outerHTML = nitron.createElement('a',props,this.innerHTML);
+    document.querySelectorAll(`.${className}[href^="/"]`).forEach(el => 
+      el.addEventListener("click", evt => {
+        evt.preventDefault();
+        const {pathname: path} = new URL(evt.target.href);
+        window.history.pushState({path}, path, path);
+      })
+    );
   };
 });
+
+customElements.define('dom-router', class extends HTMLElement {
+  connectedCallback() {
+    if(window.location.pathname == this.getAttribute('path')){
+      this.outerHTML = this.getAttribute('el');
+    }else{
+      this.outerHTML = "";
+    }
+  };
+});
+
+// const routes = {
+//   "/": `<h1>Home</h1>${nav}<p>Welcome home!</p>`,
+//   "/about": `<h1>About</h1>${nav}<p>This is a tiny SPA</p>`,
+// };
+
+// const NitronRouterRender = path => {
+//   document.querySelector("#root")
+//     .innerHTML = routes[path] || `<h1>404</h1>${nav}`
+//   ;
+// };
+
+// window.addEventListener("popstate", e =>
+//   render(new URL(window.location.href).pathname)
+// );
+// render(window.location.pathname);
