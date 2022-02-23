@@ -42,5 +42,6 @@ nitronDOM.render(App,document.getElementById('root'));
 ### License
 - `Nitron.js` : [MIT License](https://github.com/WADE-OSS/nitron/blob/main/LICENSE)
 - `Nitorn Styles Tools` : [MIT License](https://github.com/WADE-OSS/nitron-styles-Tools/blob/main/LICENSE)
+- `Nitorn Router` : [MIT License](https://github.com/WADE-OSS/nitron-router/blob/main/LICENSE)
 
 Libraries and frameworks not supported by the Nitron team will be notified separately by the library and framework team. 
