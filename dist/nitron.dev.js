@@ -47,6 +47,14 @@ class Nitron {
   // Replace the Nitron syntax with HTML.
   returnDOM(HTML){
 
+    if(HTML.match(/<Router ?.* ?\/>/g)){
+
+      HTML.match(/<Router ?.* ?\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<dom-router ${doc.slice(7,doc.length-2)}></dom-router>`);
+      });
+
+    };
+
     if(HTML.match(/<[A-Z].* ?\/>/g)){
 
       HTML.match(/<[A-Z].* ?\/>/g).forEach((doc)=>{
