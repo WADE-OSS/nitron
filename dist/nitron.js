@@ -5,15 +5,6 @@
  * Released under the MIT License.
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
-
-// Error Event : #4
-window.addEventListener("error",(err)=>{
-  document.body.innerHTML = `
-    <h1 style="color:red;">${err.error}</h1>
-    <p>info : ${err.filename} | ${err.lineno}</p>
-  `;
-});
-
 class NitronDOM {
   constructor() {};
   // Returns an element written in JS as HTML
@@ -46,6 +37,14 @@ class Nitron {
 
   // Replace the Nitron syntax with HTML.
   returnDOM(HTML){
+
+    if(HTML.match(/<Router ?.* ?\/>/g)){
+
+      HTML.match(/<Router ?.* ?\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<dom-router ${doc.slice(7,doc.length-2)}></dom-router>`);
+      });
+
+    };
 
     if(HTML.match(/<[A-Z].* ?\/>/g)){
 
