@@ -7,10 +7,43 @@
  */
 
 // Error Event : #4
+var error = [];
 window.addEventListener("error",(err)=>{
-  document.body.innerHTML = `
-    <h1 style="color:red;">${err.error}</h1>
-    <p>info : ${err.filename} | ${err.lineno}</p>
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+  let className = "";
+  for (let i = 0; i < 8; i++) {
+    const rnum = Math.floor(Math.random() * chars.length)
+    className += chars.substring(rnum, rnum + 1)
+  };
+  let styles = `
+    display: block;
+    position: fixed;
+    z-index: 1;
+    padding-left: 20px;
+    padding-top: 35px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.61);
+  `
+  nitron.styles(`.${className}`,styles);
+  nitron.styles(`.${className} h1`,`color: red;`);
+  nitron.styles(`.${className} p`,`color: #ccc;`);
+  error.push(err)
+  let errormsg = "";
+  error.forEach( doc => {
+    errormsg += `
+      <h1>${doc.error}</h1>
+      <p>info : ${doc.filename} | ${doc.lineno}</p>
+    `
+  });
+  document.body.innerHTML += `
+    <div class="${className}">
+      ${errormsg}
+    </div>
   `;
 });
 
