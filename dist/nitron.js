@@ -5,6 +5,7 @@
  * Released under the MIT License.
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
+
 class NitronDOM {
   constructor() {};
   // Returns an element written in JS as HTML
