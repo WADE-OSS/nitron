@@ -6,47 +6,6 @@
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
 
-// Error Event : #4
-var error = [];
-window.addEventListener("error",(err)=>{
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
-  let className = "";
-  for (let i = 0; i < 8; i++) {
-    const rnum = Math.floor(Math.random() * chars.length)
-    className += chars.substring(rnum, rnum + 1)
-  };
-  let styles = `
-    display: block;
-    position: fixed;
-    z-index: 1;
-    padding-left: 20px;
-    padding-top: 35px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.61);
-  `
-  nitron.styles(`.${className}`,styles);
-  nitron.styles(`.${className} h1`,`color: red;`);
-  nitron.styles(`.${className} p`,`color: #ccc;`);
-  error.push(err)
-  let errormsg = "";
-  error.forEach( doc => {
-    errormsg += `
-      <h1>${doc.error}</h1>
-      <p>info : ${doc.filename} | ${doc.lineno}</p>
-    `
-  });
-  document.body.innerHTML += `
-    <div class="${className}">
-      ${errormsg}
-    </div>
-  `;
-});
-
 class NitronDOM {
   constructor() {};
   // Returns an element written in JS as HTML
@@ -283,5 +242,52 @@ customElements.define('dom-template', class extends HTMLElement {
   }
   connectedCallback() {
     this.DOM()
+  };
+});
+
+// Error Event : #4
+var error = [];
+const errorClassNameChars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+var errorClassName = "";
+for (let i = 0; i < 8; i++) {
+  const rnum = Math.floor(Math.random() * errorClassNameChars.length)
+  errorClassName += errorClassNameChars.substring(rnum, rnum + 1)
+};
+const errorStyles = `
+  display: block;
+  position: fixed;
+  z-index: 1;
+  padding-left: 20px;
+  padding-top: 35px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.82);
+`;
+nitron.styles(`.${errorClassName}`,errorStyles);
+nitron.styles(`.${errorClassName} h1`,`color: red;`);
+nitron.styles(`.${errorClassName} p`,`color: #ccc; margin: 0;`);
+
+window.addEventListener("error",(err)=>{
+  error.push(err)
+  let errormsg = "";
+  error.forEach( doc => {
+    errormsg += `
+      <h1>${doc.error}</h1>
+      <p>info : ${doc.filename}</p>
+      <p>line : ${doc.lineno}</p>
+    `
+  });
+  if(document.querySelector(`.${errorClassName}`)){
+    document.querySelector(`.${errorClassName}`).innerHTML = errormsg;
+  }else{
+    document.body.innerHTML += `
+      <div class="${errorClassName}">
+        ${errormsg}
+      </div>
+    `
   };
 });

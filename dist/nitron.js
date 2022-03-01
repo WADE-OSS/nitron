@@ -1,27 +1,32 @@
 /*
- * Nitron.js v0.0.5
+ * Nitron.js v0.0.6 - dev (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
  * https://github.com/WADE-OSS/nitron/blob/main/LICENSE
  */
 
-
-// Error Event : #4
-window.addEventListener("error",(err)=>{
-  document.body.innerHTML = `
-    <h1 style="color:red;">${err.error}</h1>
-    <p>info : ${err.filename} | ${err.lineno}</p>
-  `;
-});
-
 class NitronDOM {
   constructor() {};
-
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-    element = nitron.returnDOM(element)
-    queryinsertion.innerHTML = element
+    element = nitron.returnDOM(element);
+
+    const xhr = new XMLHttpRequest();
+
+    queryinsertion.addEventListener("change", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+
+    queryinsertion.addEventListener("input", (event) => {
+      if(event.target.getAttribute('value-in')){
+        eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
+      };
+    });
+    
+    queryinsertion.innerHTML = element;
   };
 };
 
@@ -33,6 +38,14 @@ class Nitron {
 
   // Replace the Nitron syntax with HTML.
   returnDOM(HTML){
+
+    if(HTML.match(/<Router ?.* ?\/>/g)){
+
+      HTML.match(/<Router ?.* ?\/>/g).forEach((doc)=>{
+        HTML = HTML.replace(doc,`<dom-router ${doc.slice(7,doc.length-2)}></dom-router>`);
+      });
+
+    };
 
     if(HTML.match(/<[A-Z].* ?\/>/g)){
 
@@ -63,75 +76,44 @@ class Nitron {
         });
       };
     };
+    HTML = HTML.replace(/\s+</g,"<")
+    HTML = HTML.replace(/>\s+</g,"><")
     return HTML;
   };
 
-  // Create a component : nitron.component('component name',{return:`element`})
+  // Create a component
   component(elementName, ComponentOptions){
-
-    // Custom elements must contain - . If not present, the name dom- is added in front of the element name. 
-    var Name = "";
+    let componentName = "";
     if(elementName.includes('-')){
-      Name = elementName
+      componentName = elementName
     }else{
-      Name = `dom-${elementName}`
-    }
-
-    // Creating custom elements 
-    customElements.define(`${Name}`, class extends HTMLElement {
+      componentName = `dom-${elementName}`
+    };
+    customElements.define(componentName, class extends HTMLElement {
       connectedCallback() {
-        if (ComponentOptions.return) { 
-          ComponentOptions.return = nitron.returnDOM(ComponentOptions.return);
-          // custom Attribute : {{AttributeNames}} => AttributeNames=""
-          if (this.getAttributeNames()) {
-            const AttrNames = this.getAttributeNames();
-            var optionsreturn = ComponentOptions.return;
-            AttrNames.forEach(attr => {
-              let val = this.getAttribute(attr);
-              optionsreturn = optionsreturn.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"), val);
-            });
-            this.outerHTML = optionsreturn;
-          } else {
-            this.outerHTML = ComponentOptions.return
-          };
-
+        let componentTemplate = nitron.returnDOM(ComponentOptions.template);
+        if(this.getAttributeNames()) {
+          const AttrNames = this.getAttributeNames();
+          AttrNames.forEach(attr => {
+            let val = this.getAttribute(attr);
+            componentTemplate = componentTemplate.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"),val);
+          });
         };
-
-        // change Element
-        if(ComponentOptions.change){
-          if(ComponentOptions.change.class){
-            var elClass = `class="${ComponentOptions.change.class}"`
-            this.outerHTML = `<${ComponentOptions.change.el} ${elClass}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }else{
-            this.outerHTML = `<${ComponentOptions.change.el}>${this.innerHTML}</${ComponentOptions.change.el}>`
-          }
+  
+        if(ComponentOptions.props){
+          Object.keys(ComponentOptions.props).forEach(x => {
+            componentTemplate = componentTemplate.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
+          });
         };
-
+        this.outerHTML = componentTemplate;
       };
     });
   };
-
-  addClass(query, classnamelist){ 
-    document.querySelector(query).classList = classnamelist
-  };
-
-  randomClassName() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
-    const stringLength = 8
-    let randomstring = ''
-    for (let i = 0; i < stringLength; i++) {
-      const rnum = Math.floor(Math.random() * chars.length)
-      randomstring += chars.substring(rnum, rnum + 1)
-    }
-    return randomstring
-  };
-
-  style(selector, style) {
+  //  Element creation, Style creation API (#10) - Style creation
+  styles(selector, style){
     if (!document.styleSheets) return;
     if (document.getElementsByTagName('head').length == 0) return;
-  
     var styleSheet,mediaType;
-  
     if (document.styleSheets.length > 0) {
       for (var i = 0, l = document.styleSheets.length; i < l; i++) {
         if (document.styleSheets[i].disabled)
@@ -149,7 +131,6 @@ class Nitron {
             styleSheet = document.styleSheets[i];
           }
         }
-  
         if (typeof styleSheet !== 'undefined')
           break;
       }
@@ -164,10 +145,8 @@ class Nitron {
         }
         styleSheet = document.styleSheets[i];
       }
-  
       mediaType = typeof styleSheet.media;
     }
-  
     if (mediaType === 'string') {
       for (var i = 0, l = styleSheet.rules.length; i < l; i++) {
         if(styleSheet.rules[i].selectorText && styleSheet.rules[i].selectorText.toLowerCase()==selector.toLowerCase()) {
@@ -188,52 +167,18 @@ class Nitron {
       styleSheet.insertRule(selector + '{' + style + '}', styleSheetLength);
     }
   };
-};
-
-function styles(style="") {
-  const name = nitron.randomClassName()
-  nitron.style(`.${name}`,style)
-  if(style.style){
-    nitron.style(`.${name}`,style.style)
+  //  Element creation, Style creation API (#10) - Element creation
+  createElement(element, props,innerHTML=""){
+    if(props == null || undefined){
+      return `<${element}>${innerHTML}</${element}>`
+    }else{
+      let Attribute = "";
+      Object.keys(props).forEach((element) => {
+        Attribute += `${element}="${props[element]}"`
+      });
+      return `<${element} ${Attribute}>${innerHTML}</${element}>`
+    };
   };
-  if(style.type){
-    Object.keys(style.type).forEach(x =>
-      nitron.style(`.${name}:${x}`,style.type[x])
-    )
-  };
-  if(style.media){
-    var mediaquery = window.matchMedia(`screen and (${style.media.size})`);
-
-    if (mediaquery.matches) {
-      nitron.style(`.${name}`,style.media.style);
-      if(style.media.type){
-        Object.keys(style.media.type).forEach(x =>
-          nitron.style(`.${name}:${x}`,style.media.type[x])
-        )
-      };
-    }
-
-    mediaquery.addListener((a) => {
-      if(a.matches === true){
-         nitron.style(`.${name}`,style.media.style)
-        if(style.media.type){
-          Object.keys(style.media.type).forEach(x =>
-            nitron.style(`.${name}:${x}`,style.media.type[x])
-          )
-        }
-      }else{
-        if(style.style){
-          nitron.style(`.${name}`,style.style)
-          if(style.type){
-            Object.keys(style.type).forEach(x =>
-              nitron.style(`.${name}:${x}`,style.type[x])
-            )
-          };
-        };
-      }
-    });
-  };
-  return name
 };
 
 const nitron = new Nitron();
@@ -245,6 +190,7 @@ const nitron = new Nitron();
     <h1>{{title}}</h1>
   </Template>
 */
+
 var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
@@ -274,18 +220,27 @@ var placeholders = function (template, data) {'use strict';
   return template;
 };
 
+
 customElements.define('dom-template', class extends HTMLElement {
-  connectedCallback() {
+  DOM(){
     let Template_data = this.getAttribute('data');
     Template_data = eval(Template_data);
-    let HTML = "";
-    if(Array.isArray(Template_data)){
-      Template_data.forEach(element => {
-        HTML += placeholders(this.innerHTML,element);
-      });
+    let HTML = '<span style="color: red;">unknown error</span>';
+
+    if(this.getAttribute('data')){
+      if(Array.isArray(Template_data)){
+        Template_data.forEach(element => {
+          HTML += placeholders(this.innerHTML,element);
+        });
+      }else{
+        HTML = placeholders(this.innerHTML,Template_data);
+      };
     }else{
-      HTML = placeholders(this.innerHTML,Template_data);
-    }
+      HTML = this.innerHTML;
+    };
     this.outerHTML = HTML;
+  }
+  connectedCallback() {
+    this.DOM()
   };
 });
