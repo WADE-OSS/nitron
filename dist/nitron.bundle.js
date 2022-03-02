@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.6 - dev (v1.0.0-alpha.1)
+ * Nitron.js v0.0.7 - dev (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
@@ -368,4 +368,3 @@ window.addEventListener('load',() => {
   
     render(window.location.pathname);
   });
-render(window.location.pathname);
