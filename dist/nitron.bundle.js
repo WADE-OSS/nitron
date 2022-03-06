@@ -25,7 +25,7 @@ class NitronDOM {
             eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
         };
         });
-        
+ 
         queryinsertion.innerHTML = element;
     };
 };
@@ -39,46 +39,52 @@ constructor() {};
 // Replace the Nitron syntax with HTML.
 returnDOM(HTML){
 
-    if(HTML.match(/<Router ?.* ?\/>/g)){
-
+  if(HTML.match(/<Router ?.* ?\/>/g)){
     HTML.match(/<Router ?.* ?\/>/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<dom-router ${doc.slice(7,doc.length-2)}></dom-router>`);
     });
+  };
 
-    };
-
-    if(HTML.match(/<[A-Z].* ?\/>/g)){
-
+  if(HTML.match(/<[A-Z].* ?\/>/g)){
     HTML.match(/<[A-Z].* ?\/>/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<${doc.slice(1,doc.length-2)}></${doc.match(/[A-Z][a-z]*/g)}>`);
     });
+  };
 
-    };
-
-    if(HTML.match(/<[A-Z]/g)){
+  if(HTML.match(/<[A-Z]/g)){
     HTML.match(/<[A-Z]/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<dom-${doc[1]}`)
     });
     if(HTML.match(/\<\/[A-Z]/g)){
         HTML.match(/\<\/[A-Z]/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`</dom-${doc[2]}`)
-        });
+      });
     };
-    };
+  };
+  if(HTML.match(/<.*styles\=\".*\".*\>/g)){
+    HTML.match(/<.*styles\=\".*\".*\>/g).forEach((doc)=>{
 
-    if(HTML.match(/<>/g)){
-    HTML.match(/<>/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`<div>`)
+      let stylesAttr = String(doc.match(/styles=\".* ?; ?\"/g));
+
+      const routerLinkClassNameChars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+      var stylesAttributeClassName = "";
+      for (let i = 0; i < 8; i++) {
+        const rnum = Math.floor(Math.random() * routerLinkClassNameChars.length)
+        stylesAttributeClassName += routerLinkClassNameChars.substring(rnum, rnum + 1)
+      };
+      nitron.styles(`.${stylesAttributeClassName}`,stylesAttr.slice(8,stylesAttr.length-1));
+      if(doc.match(/ ?class=\".*\" /g)){
+        let classAttr = String(doc.match(/ ?class=\".*\" /g));
+        let docel = doc.replace(doc,doc.replace(stylesAttr,""));
+        HTML = HTML.replace(doc,docel.replace(/ ?class=\".*\" /g,` class="${classAttr.slice(8,classAttr.length-2)} ${stylesAttributeClassName}"`));
+      }else{
+        HTML = HTML.replace(doc,doc.replace(stylesAttr,`class="${stylesAttributeClassName}"`));
+      };
     });
-    if(HTML.match(/<\/>/g)){
-        HTML.match(/<\/>/g).forEach((doc)=>{
-        HTML = HTML.replace(doc,`</div>`)
-        });
-    };
-    };
-    HTML = HTML.replace(/\s+</g,"<")
-    HTML = HTML.replace(/>\s+</g,"><")
-    return HTML;
+  };
+  HTML = HTML.replace(/\s+</g,"<")
+  HTML = HTML.replace(/>\s+</g,"><")
+  return HTML;
 };
 
 // Create a component
@@ -370,4 +376,5 @@ window.addEventListener('load',() => {
   window.addEventListener("popstate", e =>
     render(new URL(window.location.href).pathname)
   );
+
 });
