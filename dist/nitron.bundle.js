@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.8 - dev (v1.0.0-alpha.1)
+ * Nitron.js v0.0.8 - bundle (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
@@ -11,8 +11,6 @@ class NitronDOM {
     // Returns an element written in JS as HTML
     render(element, queryinsertion) {
         element = nitron.returnDOM(element);
-
-        const xhr = new XMLHttpRequest();
 
         queryinsertion.addEventListener("change", (event) => {
         if(event.target.getAttribute('value-in')){
@@ -38,7 +36,7 @@ constructor() {};
 
 // Replace the Nitron syntax with HTML.
 returnDOM(HTML){
-
+  
   if(HTML.match(/<Router ?.* ?\/>/g)){
     HTML.match(/<Router ?.* ?\/>/g).forEach((doc)=>{
         HTML = HTML.replace(doc,`<dom-router ${doc.slice(7,doc.length-2)}></dom-router>`);
@@ -256,53 +254,69 @@ class NitronStyles {
   constructor() {};
 
   // Styles Component
-  component(elementName, ComponentOptions, script = null){
+  component(elementName, ComponentOptions){
     let componentName = "";
     if(elementName.includes('-')){
       componentName = elementName
     }else{
       componentName = `dom-${elementName}`
+    };
+
+    // There is a fatal bug where you cannot use the same component multiple times (#5) : resolved
+    customElements.define(componentName, class extends HTMLElement {
+      connectedCallback() {
+        if(ComponentOptions.el){
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
+        let className = `${elementName.replace('-',"_")}__`;
+        let componentStyles = ComponentOptions.style;
+        let props = {};
+        for (let i = 0; i < 8; i++) {
+            const rnum = Math.floor(Math.random() * chars.length)
+            className += chars.substring(rnum, rnum + 1)
+        };
+        Object.assign(props,{class:className});
+        if(this.getAttributeNames()) {  
+          const AttrNames = this.getAttributeNames();
+          AttrNames.forEach(attr => {
+            if(componentStyles.match(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"))){
+                let val = this.getAttribute(attr);
+                componentStyles = componentStyles.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"),val);
+            }else{
+                if(props[attr]){
+                props[attr] += ` ${this.getAttribute(attr)}`;
+                }else{
+                props[attr] = `${this.getAttribute(attr)}`;
+                };
+            };
+          });
+        };
+        if(ComponentOptions.event){
+          Object.keys(ComponentOptions.event).forEach(x => {
+            nitron.styles(`.${className}:${x}`,ComponentOptions.event[x]);
+          });
+        };
+        if(ComponentOptions.media){
+          Object.keys(ComponentOptions.media).forEach(x => {
+            let mediaquery = window.matchMedia(`screen and (${x})`);
+            mediaquery.addListener((a) => {
+              if(a.matches === true){
+                nitron.styles(`.${className}`,ComponentOptions.media[x]);
+              }else{
+                nitron.styles(`.${className}`,componentStyles);
+              };
+            });
+          });
+        };
+        if(ComponentOptions.props){
+            Object.keys(ComponentOptions.props).forEach(x => {
+            componentStyles = componentStyles.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
+            });
+        };
+        nitron.styles(`.${className}`,componentStyles);
+        this.outerHTML = nitron.createElement(ComponentOptions.el,props,this.innerHTML);
+        };
       };
-
-      // There is a fatal bug where you cannot use the same component multiple times (#5) : resolved
-      customElements.define(componentName, class extends HTMLElement {
-          connectedCallback() {
-              if(ComponentOptions.el){
-              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
-              let className = `${elementName.replace('-',"_")}__`;
-              let componentStyles = ComponentOptions.style;
-              let props = {};
-              for (let i = 0; i < 8; i++) {
-                  const rnum = Math.floor(Math.random() * chars.length)
-                  className += chars.substring(rnum, rnum + 1)
-              };
-              Object.assign(props,{class:className});
-              if(this.getAttributeNames()) {  
-                  const AttrNames = this.getAttributeNames();
-                  AttrNames.forEach(attr => { 
-
-                  if(componentStyles.match(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"))){
-                      let val = this.getAttribute(attr);
-                      componentStyles = componentStyles.replace(new RegExp(`\{\{ ?${attr} ?\}\}`,"g"),val);
-                  }else{
-                      if(props[attr]){
-                      props[attr] += ` ${this.getAttribute(attr)}`;
-                      }else{
-                      props[attr] = `${this.getAttribute(attr)}`;
-                      };
-                  };
-                  });
-              };
-              if(ComponentOptions.props){
-                  Object.keys(ComponentOptions.props).forEach(x => {
-                  componentStyles = componentStyles.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
-                  });
-              };
-              nitron.styles(`.${className}`,componentStyles);
-              this.outerHTML = nitron.createElement(ComponentOptions.el,props,this.innerHTML);
-              };
-          };
-      });
+    });
   };
 };
 
@@ -337,7 +351,7 @@ window.addEventListener('load',() => {
     const rnum = Math.floor(Math.random() * routerLinkClassNameChars.length)
     routerLinkClassName += routerLinkClassNameChars.substring(rnum, rnum + 1)
   };
-
+length
   customElements.define('dom-link', class extends HTMLElement {
     connectedCallback() {
       let props = {};
