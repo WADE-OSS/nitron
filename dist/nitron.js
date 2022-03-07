@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.8 - dev (v1.0.0-alpha.1)
+ * Nitron.js v0.0.8 - core (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
@@ -7,7 +7,6 @@
  */
 
 class NitronDOM {
-  constructor() {};
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
       element = nitron.returnDOM(element);
@@ -32,8 +31,6 @@ class NitronDOM {
 const nitronDOM = new NitronDOM();
 
 class Nitron {
-constructor() {};
-
 // Replace the Nitron syntax with HTML.
 returnDOM(HTML){
 
@@ -223,28 +220,26 @@ template = template.replace(/\{\{([^}]+)\}\}/g, function (match) {
 });
 return template;
 };
-
-
 customElements.define('dom-template', class extends HTMLElement {
-DOM(){
-  let Template_data = this.getAttribute('data');
-  Template_data = eval(Template_data);
-  let HTML = '';
+  DOM(){
+    let Template_data = this.getAttribute('data');
+    Template_data = eval(Template_data);
+    let HTML = '';
 
-  if(this.getAttribute('data')){
-  if(Array.isArray(Template_data)){
-      Template_data.forEach(element => {
-      HTML += placeholders(this.innerHTML,element);
-      });
-  }else{
-      HTML = placeholders(this.innerHTML,Template_data);
+    if(this.getAttribute('data')){
+    if(Array.isArray(Template_data)){
+        Template_data.forEach(element => {
+        HTML += placeholders(this.innerHTML,element);
+        });
+    }else{
+        HTML = placeholders(this.innerHTML,Template_data);
+    };
+    }else{
+    HTML = this.innerHTML;
+    };
+    this.outerHTML = HTML;
+  }
+  connectedCallback() {
+    this.DOM()
   };
-  }else{
-  HTML = this.innerHTML;
-  };
-  this.outerHTML = HTML;
-}
-connectedCallback() {
-  this.DOM()
-};
 });
