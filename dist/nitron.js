@@ -7,23 +7,24 @@
  */
 
 class NitronDOM {
+  constructor() {};
   // Returns an element written in JS as HTML
   render(element, queryinsertion) {
-      element = nitron.returnDOM(element);
-
-      queryinsertion.addEventListener("change", (event) => {
+    element = nitron.returnDOM(element);
+    
+    queryinsertion.addEventListener("change", (event) => {
       if(event.target.getAttribute('value-in')){
           eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
       };
-      });
+    });
 
-      queryinsertion.addEventListener("input", (event) => {
+    queryinsertion.addEventListener("input", (event) => {
       if(event.target.getAttribute('value-in')){
           eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
       };
-      });
+    });
 
-      queryinsertion.innerHTML = element;
+    queryinsertion.innerHTML = element;
   };
 };
 
@@ -31,6 +32,8 @@ class NitronDOM {
 const nitronDOM = new NitronDOM();
 
 class Nitron {
+constructor() {};
+
 // Replace the Nitron syntax with HTML.
 returnDOM(HTML){
 
@@ -56,6 +59,7 @@ if(HTML.match(/<[A-Z]/g)){
     });
   };
 };
+
 if(HTML.match(/<.*styles\=\".*\".*\>/g)){
   HTML.match(/<.*styles\=\".*\".*\>/g).forEach((doc)=>{
 
@@ -199,47 +203,55 @@ if (!data) return template;
 template = template.replace(/\{\{([^}]+)\}\}/g, function (match) {
   match = match.slice(2, -2);
   var sub = match.split('.');
-
   if (sub.length > 1) {
-  var temp = data;
-
-  sub.forEach(function (item) {
-      var item = item.trim();
-      if (!temp[item]) {
-      temp = '{{' + match.trim() + '}}';
-      return;
-      }
-      temp = temp[item];
-  });
-  return temp;
-  }
-  else {
-  if (!data[match.trim()]) return '{{' + match.trim() + '}}';
-  return data[match.trim()];
-  }
+    var temp = data;
+  
+    sub.forEach(function (item) {
+        var item = item.trim();
+        if (!temp[item]) {
+        temp = '{{' + match.trim() + '}}';
+        return;
+        }
+        temp = temp[item];
+    });
+    return eval(`data.${match.trim()}`);
+  }else {
+    if(match.match(/\[.*\]/g)){
+      return eval(`data.${match.trim()}`);
+    };
+    if (!data[match.trim()]){
+      return '{{' + match.trim() + '}}'
+    }else{
+      return data[match.trim()];
+    };
+  };
 });
 return template;
 };
-customElements.define('dom-template', class extends HTMLElement {
-  DOM(){
-    let Template_data = this.getAttribute('data');
-    Template_data = eval(Template_data);
-    let HTML = '';
 
-    if(this.getAttribute('data')){
-    if(Array.isArray(Template_data)){
-        Template_data.forEach(element => {
-        HTML += placeholders(this.innerHTML,element);
-        });
-    }else{
-        HTML = placeholders(this.innerHTML,Template_data);
-    };
-    }else{
-    HTML = this.innerHTML;
-    };
-    this.outerHTML = HTML;
-  }
-  connectedCallback() {
-    this.DOM()
+
+customElements.define('dom-template', class extends HTMLElement {
+DOM(){
+
+  let Template_data = this.getAttribute('data');
+  Template_data = eval(Template_data);
+  let HTML = '';
+
+  if(this.getAttribute('data')){
+  if(Array.isArray(Template_data)){
+      Template_data.forEach(element => {
+      HTML += placeholders(this.innerHTML,element);
+      });
+  }else{
+      HTML = placeholders(this.innerHTML,Template_data);
   };
+  }else{
+  HTML = this.innerHTML;
+  };
+  this.outerHTML = HTML;
+}
+
+connectedCallback() {
+    this.DOM();
+};
 });
