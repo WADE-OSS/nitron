@@ -16,6 +16,7 @@ class NitronDOM {
         if(event.target.getAttribute('value-in')){
             eval(`${event.target.getAttribute('value-in')} = "${event.target.value}"`)
         };
+
       });
 
       queryinsertion.addEventListener("input", (event) => {
@@ -196,6 +197,8 @@ var data = {title:"Nitron.js"}
 </Template>
 */
 
+var PublicClassData = {};
+
 var placeholders = function (template, data) {'use strict';
   template = typeof (template) === 'function' ? template() : template;
   if (['string', 'number'].indexOf(typeof template) === -1) throw 'NitronDOM : please provide a valid template!';
@@ -226,7 +229,14 @@ var placeholders = function (template, data) {'use strict';
       };
     };
   });
-  return template;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
+  let className = "";
+  for (let i = 0; i < 8; i++) {
+      const rnum = Math.floor(Math.random() * chars.length)
+      className += chars.substring(rnum, rnum + 1)
+  };
+  PublicClassData[className] = template;
+  return nitron.createElement('div',{class:className},template);
 };
 
 
