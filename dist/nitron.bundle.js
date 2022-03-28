@@ -1,5 +1,5 @@
 /*
- * Nitron.js v0.0.9 - bundle (v1.0.0-alpha.1)
+ * Nitron.js v0.1.0 - bundle (v1.0.0-alpha.1)
  *
  * (c) 2022 WADE Open Source Software and Nitron Team. and its affiliates.
  * Released under the MIT License.
@@ -312,30 +312,37 @@ class NitronStyles {
             nitron.styles(`.${className}:${x}`,ComponentOptions.event[x]);
           });
         };
+
         if(ComponentOptions.media){
           Object.keys(ComponentOptions.media).forEach(x => {
-            let mediaquery = window.matchMedia(`(${x})`);
-            if (mediaquery.matches) {
-              nitron.styles(`.${className}`,ComponentOptions.media[x]);
-            }else{
-              nitron.styles(`.${className}`,componentStyles);
-            };
-            mediaquery.addListener((a) => {
-              if(a.matches === true){
+
+            let mediaquery = window.matchMedia(`screen and (${x})`);
+            
+            window.addEventListener('load',()=>{
+              if(mediaquery.matches == true){
                 nitron.styles(`.${className}`,ComponentOptions.media[x]);
               }else{
                 nitron.styles(`.${className}`,componentStyles);
               };
             });
+
+            mediaquery.addListener((a) => {
+              if(a.matches == true){
+                nitron.styles(`.${className}`,ComponentOptions.media[x]);
+              }else{
+                nitron.styles(`.${className}`,componentStyles);
+              };
+            });
+
           });
-        }else{
-          nitron.styles(`.${className}`,componentStyles);
         };
+
         if(ComponentOptions.props){
             Object.keys(ComponentOptions.props).forEach(x => {
             componentStyles = componentStyles.replace(new RegExp(`\{\{ ?${x} ?\}\}`,"g"), ComponentOptions.props[x]);
             });
         };
+        nitron.styles(`.${className}`,componentStyles);
         this.outerHTML = nitron.createElement(ComponentOptions.el,props,this.innerHTML);
         };
       };
